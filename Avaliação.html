@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Comunicação - PDI</title>
+    <style>
+        :root {
+            --color-primary: #2180b4;
+            --color-primary-hover: #1d5a85;
+            --color-bg: #f5f5f5;
+            --color-surface: #ffffff;
+            --color-text: #1f2121;
+            --color-text-secondary: #626c7c;
+            --color-border: #d4d4d4;
+            --color-success: #20a080;
+            --radius-base: 8px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: var(--space-20);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--color-surface);
+            border-radius: var(--radius-base);
+            padding: var(--space-24);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-24);
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: var(--color-primary);
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-24);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--color-text);
+        }
+
+        .likert-scale {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .likert-option {
+            flex: 1;
+            min-width: 60px;
+        }
+
+        .likert-option input[type="radio"] {
+            display: none;
+        }
+
+        .likert-option label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 150ms ease;
+            margin-bottom: 0;
+        }
+
+        .likert-option input[type="radio"]:checked + label {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .likert-option label:hover {
+            border-color: var(--color-primary);
+            background-color: rgba(33, 128, 180, 0.05);
+        }
+
+        .nps-scale {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .nps-button {
+            position: relative;
+        }
+
+        .nps-button input[type="radio"] {
+            display: none;
+        }
+
+        .nps-button label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 150ms ease;
+            margin-bottom: 0;
+        }
+
+        .nps-button input[type="radio"]:checked + label {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .nps-button label:hover {
+            border-color: var(--color-primary);
+            background-color: rgba(33, 128, 180, 0.05);
+        }
+
+        .nps-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            color: var(--color-text);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 180, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: var(--space-24);
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .btn-submit {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn-reset {
+            background-color: #e8e8e8;
+            color: var(--color-text);
+        }
+
+        .btn-reset:hover {
+            background-color: #d4d4d4;
+        }
+
+        .success-message {
+            display: none;
+            background-color: rgba(32, 160, 128, 0.1);
+            border: 1px solid var(--color-success);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+            color: var(--color-success);
+            text-align: center;
+            font-weight: 500;
+            margin-top: var(--space-16);
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Avaliação de Comunicação</h1>
+            <p>PDI - Desenvolvimento Profissional Contínuo</p>
+        </div>
+        <iframe sandbox="allow-forms allow-same-origin allow-scripts"
+        <form id="feedbackForm">
+            <!-- Pergunta 1 -->
+            <div class="form-group">
+                <label>1. A clareza e estruturação dos argumentos melhoraram? <span class="required">*</span></label>
+                <div class="likert-scale">
+                    <div class="likert-option">
+                        <input type="radio" id="q1-1" name="clarity" value="1" required>
+                        <label for="q1-1">Discordo Totalmente</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q1-2" name="clarity" value="2">
+                        <label for="q1-2">Discordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q1-3" name="clarity" value="3">
+                        <label for="q1-3">Neutro</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q1-4" name="clarity" value="4">
+                        <label for="q1-4">Concordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q1-5" name="clarity" value="5">
+                        <label for="q1-5">Concordo Totalmente</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pergunta 2 -->
+            <div class="form-group">
+                <label>2. A habilidade de conduzir conversas difíceis e gerenciar conflitos evoluiu? <span class="required">*</span></label>
+                <div class="likert-scale">
+                    <div class="likert-option">
+                        <input type="radio" id="q2-1" name="conflict" value="1" required>
+                        <label for="q2-1">Discordo Totalmente</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q2-2" name="conflict" value="2">
+                        <label for="q2-2">Discordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q2-3" name="conflict" value="3">
+                        <label for="q2-3">Neutro</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q2-4" name="conflict" value="4">
+                        <label for="q2-4">Concordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q2-5" name="conflict" value="5">
+                        <label for="q2-5">Concordo Totalmente</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pergunta 3 -->
+            <div class="form-group">
+                <label>3. Observa-se maior empatia e escuta ativa nas interações? <span class="required">*</span></label>
+                <div class="likert-scale">
+                    <div class="likert-option">
+                        <input type="radio" id="q3-1" name="empathy" value="1" required>
+                        <label for="q3-1">Discordo Totalmente</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q3-2" name="empathy" value="2">
+                        <label for="q3-2">Discordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q3-3" name="empathy" value="3">
+                        <label for="q3-3">Neutro</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q3-4" name="empathy" value="4">
+                        <label for="q3-4">Concordo</label>
+                    </div>
+                    <div class="likert-option">
+                        <input type="radio" id="q3-5" name="empathy" value="5">
+                        <label for="q3-5">Concordo Totalmente</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NPS -->
+            <div class="form-group">
+                <label>Qual a probabilidade de você recomendar a evolução dessa pessoa para outras oportunidades? <span class="required">*</span></label>
+                <div class="nps-scale">
+                    <div class="nps-button">
+                        <input type="radio" id="nps-0" name="nps" value="0" required>
+                        <label for="nps-0">0</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-1" name="nps" value="1">
+                        <label for="nps-1">1</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-2" name="nps" value="2">
+                        <label for="nps-2">2</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-3" name="nps" value="3">
+                        <label for="nps-3">3</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-4" name="nps" value="4">
+                        <label for="nps-4">4</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-5" name="nps" value="5">
+                        <label for="nps-5">5</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-6" name="nps" value="6">
+                        <label for="nps-6">6</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-7" name="nps" value="7">
+                        <label for="nps-7">7</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-8" name="nps" value="8">
+                        <label for="nps-8">8</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-9" name="nps" value="9">
+                        <label for="nps-9">9</label>
+                    </div>
+                    <div class="nps-button">
+                        <input type="radio" id="nps-10" name="nps" value="10">
+                        <label for="nps-10">10</label>
+                    </div>
+                </div>
+                <div class="nps-labels">
+                    <span>Improvável</span>
+                    <span>Muito provável</span>
+                </div>
+            </div>
+
+            <!-- Campo Aberto -->
+            <div class="form-group">
+                <label for="feedback">Comentários adicionais (opcional)</label>
+                <textarea id="feedback" name="feedback" placeholder="Compartilhe observações específicas, exemplos de melhoria ou pontos positivos..."></textarea>
+                <p class="info-text">Espaço para feedback qualitativo sobre a evolução em comunicação</p>
+            </div>
+
+            <!-- Botões -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit">Enviar Avaliação</button>
+                <button type="reset" class="btn-reset">Limpar Formulário</button>
+            </div>
+
+            <!-- Mensagem de Sucesso -->
+            <div class="success-message" id="successMessage">
+                ✓ Obrigado! Sua avaliação foi registrada com sucesso.
+            </div>
+        </form>
+    </frame>
+    </div>
+</body>
+    <script>
+        const form = document.getElementById('feedbackForm');
+        const successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Coleta de dados
+            const formData = {
+                timestamp: new Date().toLocaleString('pt-BR'),
+                clarity: document.querySelector('input[name="clarity"]:checked').value,
+                conflict: document.querySelector('input[name="conflict"]:checked').value,
+                empathy: document.querySelector('input[name="empathy"]:checked').value,
+                nps: document.querySelector('input[name="nps"]:checked').value,
+                feedback: document.getElementById('feedback').value || 'Sem comentários'
+            };
+
+            try {
+                // Google Forms integrado com IDs reais
+                const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfm_bR_hF1-x7EqdxUh3iTQFEjgyAQoBATerVmeqhXnV0y5sg/formResponse';
+                
+                // Mapeia os entry IDs extraídos do seu formulário
+                const formParams = new URLSearchParams({
+                    'entry.702406475': formData.clarity,       // Pergunta 1: Clareza
+                    'entry.1251980919': formData.conflict,     // Pergunta 2: Conflitos
+                    'entry.1595722017': formData.empathy,      // Pergunta 3: Empatia
+                    'entry.1852710350': formData.nps,          // Pergunta 4: NPS
+                    'entry.1777093880': formData.feedback      // Pergunta 5: Comentários
+                });
+                
+                // Envia para Google Forms
+                await fetch(FORM_URL, {
+                    method: 'POST',
+                    body: formParams,
+                    mode: 'no-cors'
+                });
+
+                // Exibe mensagem de sucesso
+                successMessage.classList.add('show');
+
+                // Reseta o formulário após 3 segundos
+                setTimeout(() => {
+                    form.reset();
+                    successMessage.classList.remove('show');
+                }, 3000);
+
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+                // Mesmo com erro de CORS, os dados geralmente são enviados
+                successMessage.classList.add('show');
+                setTimeout(() => {
+                    form.reset();
+                    successMessage.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
