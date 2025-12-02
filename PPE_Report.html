@@ -275,16 +275,6 @@
             to { transform: rotate(360deg); }
         }
 
-        .error-message {
-            background: #fadbd8;
-            color: #c0392b;
-            border-left: 5px solid #e74c3c;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            font-weight: 500;
-        }
-
         .footer {
             background: #f9fafb;
             border-top: 1px solid #ecf0f1;
@@ -332,16 +322,6 @@
             font-size: 1.1em;
         }
 
-        .integration-info {
-            background: #d5f4e6;
-            border-left: 5px solid #2ecc71;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #27ae60;
-            font-size: 0.95em;
-        }
-
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8em;
@@ -379,23 +359,17 @@
         <!-- HEADER -->
         <div class="header">
             <h1>📊 PPE Report Dashboard</h1>
-            <p>Integração com Data Extension SFMC - v3.0</p>
+            <p>Dados carregados do GitHub - v3.0</p>
         </div>
 
         <!-- CONTENT -->
         <div class="content">
-            <!-- INTEGRATION INFO -->
-            <div class="integration-info">
-                <strong>✅ Modo Produção Ativo</strong><br>
-                Conectado com Data Extension "PPE_Report" do SFMC. Os dados abaixo são carregados em tempo real.
-            </div>
-
             <!-- INFO BOX -->
             <div class="info-box" id="infoBox">
                 <div class="info-icon">ℹ️</div>
                 <div class="info-text">
                     <strong>Status:</strong>
-                    <span id="statusText">Carregando dados...</span>
+                    <span id="statusText">Carregando dados do CSV...</span>
                 </div>
             </div>
 
@@ -420,7 +394,7 @@
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="🔍 Buscar registros...">
                 </div>
-                <button class="btn" onclick="loadDataFromDE()" id="loadBtn">🔄 Carregar SFMC</button>
+                <button class="btn" onclick="loadCSVFromGithub()" id="loadBtn">🔄 Recarregar CSV</button>
                 <button class="btn btn-secondary" onclick="exportToCSV()" id="exportBtn">📥 Exportar CSV</button>
             </div>
 
@@ -431,7 +405,7 @@
             <div id="result">
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <p>Carregando dados da Data Extension PPE_Report...</p>
+                    <p>Carregando dados do CSV...</p>
                 </div>
             </div>
         </div>
@@ -447,9 +421,91 @@
         let filteredData = [];
         let currentFilter = '';
 
-        // URL do seu repositório GitHub (para dados de fallback)
-        const GITHUB_DATA_URL = 'https://api.github.com/repos/andres4victor/form_aval/contents/PPE_Report.json';
+        // ===== FUNÇÃO PARA CONVERTER CSV EM ARRAY =====
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            // Primeira linha = cabeçalhos
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            
+            // Resto das linhas = dados
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue; // Pular linhas vazias
+                
+                const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                const obj = {};
+                
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                
+                data.push(obj);
+            }
+            
+            return data;
+        }
 
+        // ===== CARREGAR CSV DO GITHUB =====
+        function loadCSVFromGithub() {
+            const loadBtn = document.getElementById('loadBtn');
+            
+            // ⚠️ MUDE ESTA URL PARA A SUA URL DO CSV
+            const CSV_URL = 'https://raw.githubusercontent.com/andres4victor/form_aval/main/PPE_Report.csv';
+            
+            loadBtn.disabled = true;
+            loadBtn.textContent = '⏳ Carregando CSV...';
+            
+            document.getElementById('result').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando dados do CSV...</p>
+                </div>
+            `;
+            
+            fetch(CSV_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error('Arquivo não encontrado (verifique a URL)');
+                    return response.text();
+                })
+                .then(csv => {
+                    const data = parseCSV(csv);
+                    
+                    if (data.length === 0) {
+                        throw new Error('CSV vazio ou inválido');
+                    }
+                    
+                    allData = data;
+                    filteredData = [...allData];
+                    renderTable(filteredData);
+                    loadBtn.textContent = '🔄 Recarregar CSV';
+                    loadBtn.disabled = false;
+                    
+                    console.log(`✅ ${data.length} registros carregados do CSV`);
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    document.getElementById('infoBox').classList.add('error');
+                    document.getElementById('infoBox').innerHTML = `
+                        <div class="info-icon">❌</div>
+                        <div class="info-text">
+                            <strong>Erro ao carregar CSV:</strong>
+                            <span>${error.message}</span>
+                        </div>
+                    `;
+                    document.getElementById('result').innerHTML = `
+                        <div class="no-results">
+                            ❌ Erro: ${error.message}<br><br>
+                            <small>Verifique se a URL do CSV está correta e o arquivo existe no GitHub</small>
+                        </div>
+                    `;
+                    loadBtn.textContent = '🔄 Tentar novamente';
+                    loadBtn.disabled = false;
+                });
+        }
+
+        // ===== RENDERIZAR TABELA =====
         function renderTable(data) {
             if (data.length === 0) {
                 document.getElementById('result').innerHTML = '<div class="no-results">📭 Nenhum registro encontrado com os filtros aplicados</div>';
@@ -467,6 +523,7 @@
             document.getElementById('updateDate').textContent = dateStr;
             document.getElementById('statusText').textContent = `✅ OK - ${totalRecords} registros encontrados`;
 
+            document.getElementById('infoBox').classList.remove('error');
             document.getElementById('infoBox').innerHTML = `
                 <div class="info-icon">✅</div>
                 <div class="info-text">
@@ -474,7 +531,6 @@
                     <span>Dados carregados com sucesso</span>
                 </div>
             `;
-            document.getElementById('infoBox').classList.remove('error');
 
             // Montar tabela
             let html = '<div class="table-wrapper"><table><thead><tr>';
@@ -509,58 +565,7 @@
             document.getElementById('footer').textContent = `✅ Dashboard atualizado em ${dateStr} | Total: ${totalRecords} registros | Exibindo: ${displayedRecords}`;
         }
 
-        function loadDataFromDE() {
-            const loadBtn = document.getElementById('loadBtn');
-            loadBtn.disabled = true;
-            loadBtn.textContent = '⏳ Carregando...';
-
-            // Simular carregamento com delay
-            setTimeout(() => {
-                document.getElementById('result').innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>Conectando à Data Extension PPE_Report...</p>
-                    </div>
-                `;
-
-                // Aqui vai a integração real com SFMC via API ou CloudPage
-                // Por enquanto, mostraremos um erro instruindo como integrar
-                setTimeout(() => {
-                    showIntegrationInstructions();
-                    loadBtn.disabled = false;
-                    loadBtn.textContent = '🔄 Carregar SFMC';
-                }, 2000);
-            }, 500);
-        }
-
-        function showIntegrationInstructions() {
-            const errorHtml = `
-                <div class="error-message">
-                    <strong>⚠️ Instruções de Integração com SFMC</strong><br><br>
-                    <strong>Para integrar com dados reais da Data Extension PPE_Report:</strong><br><br>
-                    
-                    <strong>Opção 1: Via CloudPage (Recomendado)</strong><br>
-                    1. Crie uma CloudPage no SFMC que exponha os dados em JSON<br>
-                    2. Atualize a URL de fetch abaixo:<br>
-                    <code>fetch('https://seu-sfmc-instance.pub.sfmc-content.com/seu-cloudpage')</code><br><br>
-
-                    <strong>Opção 2: Via Marketing Cloud API</strong><br>
-                    1. Configure autenticação OAuth2<br>
-                    2. Use o endpoint de Data Extension:<br>
-                    <code>GET /data/v1/customobjectdata/{{DEKey}}/rowset</code><br><br>
-
-                    <strong>Opção 3: Via CSV no GitHub</strong><br>
-                    1. Salve os dados exportados como PPE_Report.json<br>
-                    2. Faça push para seu repositório<br>
-                    3. O dashboard carregará automaticamente<br><br>
-
-                    <strong>Dados de Exemplo Carregados (modo local):</strong><br>
-                    Para testar, exporte os dados da PPE_Report como JSON e adicione ao repositório.
-                </div>
-            `;
-            document.getElementById('result').innerHTML = errorHtml;
-        }
-
+        // ===== ORDENAR TABELA =====
         function sortTable(column) {
             filteredData.sort((a, b) => {
                 const valA = a[column];
@@ -572,6 +577,7 @@
             renderTable(filteredData);
         }
 
+        // ===== BUSCAR DADOS =====
         function searchData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             
@@ -591,6 +597,7 @@
             renderTable(filteredData);
         }
 
+        // ===== ATUALIZAR TAGS DE FILTRO =====
         function updateFilterTags() {
             const tagsDiv = document.getElementById('filterTags');
             if (currentFilter) {
@@ -600,11 +607,13 @@
             }
         }
 
+        // ===== LIMPAR FILTRO =====
         function clearFilter() {
             document.getElementById('searchInput').value = '';
             searchData();
         }
 
+        // ===== EXPORTAR CSV =====
         function exportToCSV() {
             if (filteredData.length === 0) {
                 alert('Nenhum dado para exportar!');
@@ -633,20 +642,13 @@
             document.body.removeChild(link);
         }
 
-        // Event listeners
+        // ===== EVENT LISTENERS =====
         document.getElementById('searchInput').addEventListener('keyup', searchData);
 
-        // Ao carregar a página
+        // ===== CARREGAR DADOS AO ABRIR A PÁGINA =====
         window.addEventListener('load', () => {
-            showIntegrationInstructions();
+            loadCSVFromGithub();
         });
-
-        // Função para carregar dados de um JSON exportado
-        function loadJSONData(data) {
-            allData = Array.isArray(data) ? data : (data.rows || data);
-            filteredData = [...allData];
-            renderTable(filteredData);
-        }
     </script>
 </body>
 </html>
