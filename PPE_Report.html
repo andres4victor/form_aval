@@ -370,7 +370,7 @@
     <div class="container">
         <div class="header">
             <h1>📊 PPE Report Dashboard</h1>
-            <p>Análise de Relatórios - v4.0</p>
+            <p>Análise de Relatórios - v4.1</p>
         </div>
 
         <div class="content">
@@ -600,7 +600,7 @@
             return result.map(v => v.replace(/^"|"$/g, ''));
         }
 
-        // ===== FORMATAR VALORES COM TAXA =====
+        // ===== FORMATAR VALORES COM TAXA (CORRIGIDO) =====
         function formatValue(header, value) {
             if (!value) return '---';
 
@@ -610,7 +610,8 @@
             if (headerLower.includes('taxa') || headerLower.includes('percentage')) {
                 const num = parseFloat(value);
                 if (!isNaN(num)) {
-                    return (num * 100).toFixed(2) + '%';
+                    // Dividir por 100 primeiro, depois mostrar como porcentagem
+                    return (num / 100).toFixed(2) + '%';
                 }
             }
 
